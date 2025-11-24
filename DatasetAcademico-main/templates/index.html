@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🎓 Predicción Académica (Regresión Logística) + RNA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=5" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎓 Predicción Académica — Regresión Logística</h1>
+      <p class="sub">
+        Clasificación de estudiantes Aprobado / No Aprobado a partir de variables académicas numéricas.
+      </p>
+    </header>
+
+    <section class="card">
+      <div class="hero">
+        <div class="controls">
+          <label for="rowsInput">Tamaño del dataset:</label>
+          <input id="rowsInput" type="number" min="1000" step="1000" value="10000" />
+          <label class="chk"><input id="forceChk" type="checkbox" /> Re-crear dataset</label>
+        </div>
+        <div class="actions">
+          <button id="startBtn" class="btn-primary" onclick="startPipeline()">▶️ Empezar</button>
+          <a id="btnCsv" class="btn-ghost" href="#">⬇️ Dataset CSV</a>
+          <a id="btnJson" class="btn-ghost" href="#">⬇️ Resultados JSON</a>
+        </div>
+      </div>
+
+      <div id="steps" class="steps hidden">
+        <div class="step"><div class="dot"></div><div class="label">1) Preparando / generando dataset…</div></div>
+        <div class="step"><div class="dot"></div><div class="label">2) Separando X (entradas) y Y (salida)…</div></div>
+        <div class="step"><div class="dot"></div><div class="label">3) Entrenando regresión logística…</div></div>
+        <div class="step"><div class="dot"></div><div class="label">4) Calculando métricas y matriz de confusión…</div></div>
+        <div class="step"><div class="dot"></div><div class="label">5) Renderizando tablas…</div></div>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+      </div>
+
+      <div id="result" class="result hidden">
+        <h2>📊 Resumen del experimento</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>📦 Dataset</h3>
+            <p><b>Filas:</b> <span id="rows">–</span></p>
+            <p><b>Columnas:</b> <span id="cols">–</span></p>
+            <p><b>Entradas X:</b> <span id="xcols">–</span></p>
+            <p><b>Salidas Y:</b> <span id="ycols">–</span></p>
+            <p style="color:#9fc6ff;margin-top:6px;"><small id="note">–</small></p>
+          </div>
+          <div class="box">
+            <h3>🧮 Métricas de la regresión logística</h3>
+            <div class="coefs">
+              <div class="pill">Exactitud (Accuracy): <span id="logAcc">–</span></div>
+              <div class="pill">Error: <span id="logErr">–</span></div>
+              <div class="pill">Precisión: <span id="logPrec">–</span></div>
+              <div class="pill">Recall: <span id="logRec">–</span></div>
+              <div class="pill">F1-score: <span id="logF1">–</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h2>🧩 Matriz de confusión</h2>
+        <div class="table-wrap">
+          <table id="logConf">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Pred. No Aprobado (0)</th>
+                <th>Pred. Aprobado (1)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Se llena desde JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <h2>🔢 Vista previa de los datos</h2>
+
+        <h3>Entradas (X)</h3>
+        <div class="table-wrap">
+          <table id="tableX">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <h3>Salidas (Y)</h3>
+        <div class="table-wrap">
+          <table id="tableY">
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="done">
+          <span class="badge">✅ Proceso completado</span>
+          <p>
+            Se genera un dataset académico sintético, se define <b>Aprobado</b> como variable binaria (1 si
+            <b>PromedioFinal ≥ 3.0</b>) y se entrena una <b>regresión logística</b> para clasificar a los estudiantes
+            como aprobados o no aprobados. Se muestran las métricas y la matriz de confusión, junto con ejemplos de
+            las entradas (X) y salidas (Y).
+          </p>
+        </div>
+      </div>
+
+      <div id="error" class="error hidden"></div>
+    </section>
+
+<!-- NUEVO: Bloques para la RNA -->
+
+<div class="col">
+        <h3>🧠 Red Neuronal (MLP)</h3>
+        <div class="actions">
+ <button id="btnMlp" type="button" style="margin-left:1rem">🧠 Ejecutar solo RNA (MLP)</button>
+        </div>
+      </div>
+        <p>
+          Exactitud (Accuracy): <span id="mlpAcc">–</span><br>
+          Error: <span id="mlpErr">–</span><br>
+          Precisión: <span id="mlpPrec">–</span><br>
+          Recall: <span id="mlpRec">–</span><br>
+          F1-score: <span id="mlpF1">–</span>
+        </p>
+        <h3>🧮 Matriz de confusión (MLP)</h3>
+        <table id="mlpConf">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Pred. No Aprobado (0)</th>
+              <th>Pred. Aprobado (1)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <h3>🧩 Arquitectura de la RNA</h3>
+        <pre id="mlpArch">–</pre>
+      </div>
+    </div>
+
+    <h2>🧪 Vista previa de los datos</h2>
+    <div class="row">
+      <div class="col">
+        <h3>Entradas (X)</h3>
+        <table id="tableX">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="col">
+        <h3>Salidas (Y)</h3>
+        <table id="tableY">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+
+    <footer><p>Hecho con 💙 Flask + scikit-learn</p></footer>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') }}?v=5"></script>
+</body>
+</html>
