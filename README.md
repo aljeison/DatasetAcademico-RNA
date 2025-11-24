@@ -1,7 +1,7 @@
 
-# 🎓 DatasetAcadémico – Regresión Logística de Aprobación
+# 🎓 DatasetAcadémico — Regresión Logística y Red Neuronal (MLP)
 
-Aplicación web sencilla en **Flask** que genera un **dataset académico sintético**, define una variable binaria **Aprobado / No Aprobado** y entrena una **regresión logística** para clasificar estudiantes según su desempeño.
+Aplicación web sencilla en **Flask** que genera un **dataset académico sintético**, define una variable binaria **Aprobado / No Aprobado** y entrena una **regresión logística** (línea base) y **Red Neuronal Artificial (MLP)** con dos capas ocultas, para clasificar estudiantes según su desempeño.
 
 El objetivo es servir como ejemplo práctico para el **Punto 1 (Regresión Logística)** del taller de Machine Learning.
 
@@ -34,6 +34,19 @@ Todas **numéricas**:
 
 La regresión logística se entrena para predecir `Aprobado` a partir de las variables X.
 
+Red Neuronal Artificial (MLP)
+- **Normalización**
+previa con `StandardScaler` y entrenamiento con `MLPClassifier` (solver `adam`).  
+- **Arquitectura**:
+  - **Entrada**: 8 neuronas (por las 8 columnas de X).
+  - **Oculta 1**: 16 neuronas (ReLU).
+  - **Oculta 2**: 8 neuronas (ReLU).
+  - **Salida**: 1 neurona (sigmoide para probabilidad de aprobación).
+- El backend expone, además de las métricas, la **arquitectura detallada**:
+  - `input_neurons`, `hidden_layers`, `output_neurons`
+  - `weights_shapes` y `bias_shapes` (dimensiones de pesos y sesgos por capa).
+
+
 ---
 
 ## 🧩 Flujo del modelo
@@ -50,6 +63,7 @@ La regresión logística se entrena para predecir `Aprobado` a partir de las var
 3. **Entrenamiento de la regresión logística**
    - Se divide en **train (80%)** y **test (20%)** con `train_test_split`.
    - Se entrena un modelo `LogisticRegression` de `scikit-learn`.
+   - **MLP** con normalización + dos capas ocultas (16 y 8)
 
 4. **Evaluación**
    - Métricas sobre el conjunto de prueba:
@@ -63,6 +77,7 @@ La regresión logística se entrena para predecir `Aprobado` a partir de las var
      - Falsos positivos (FP)
      - Falsos negativos (FN)
      - Verdaderos positivos (TP)
+     - Matrices de confusión por cada modelo
 
 5. **Interfaz web (Flask)**
    - Permite:
@@ -74,6 +89,7 @@ La regresión logística se entrena para predecir `Aprobado` a partir de las var
      - Descargar:
        - `dataset_notas.csv`
        - `resultados.json` con toda la información del experimento.
+       - `mlp_resultados.json` (solo MLP)
 
 ---
 
@@ -82,6 +98,7 @@ La regresión logística se entrena para predecir `Aprobado` a partir de las var
 ```text
 DatasetAcademico/
 ├─ app.py                  # Backend Flask + generación de dataset + regresión logística
+├─ mlp_module.py          # Módulo separado: normalización + MLP + métricas/arquitectura       
 ├─ dataset_notas.csv       # Dataset generado (se crea automáticamente si no existe)
 ├─ requirements.txt        # Dependencias del proyecto
 ├─ templates/
@@ -168,11 +185,15 @@ http://127.0.0.1:5000
      3. Entrenamiento de la regresión logística.
      4. Cálculo de métricas y matriz de confusión.
      5. Renderizado del resumen y tablas.
+    
+  
+4. **Botón “🧠 Ejecutar solo RNA (MLP)”** 
+Entrena solo el MLP y muestra métricas + arquitectura (capas y neuronas).
 
-4. **Dataset CSV**  
+5. **Dataset CSV**  
    - Descarga `dataset_notas.csv` con todas las filas del dataset.
 
-5. **Resultados JSON**  
+6. **Resultados JSON**  
    - Descarga `resultados.json` con:
      - `dataset_info`
      - `logistic.metrics`
@@ -215,7 +236,17 @@ http://127.0.0.1:5000
 
 Estos valores son los que se suelen reportar en el documento del taller.
 
+📈 Métricas expuestas en JSON
+
+logistic.metrics y logistic.confusion_matrix (línea base).
+mlp.metrics y mlp.confusion_matrix (RNA).
+mlp.architecture:
+
+input_neurons, hidden_layers, output_neurons
+weights_shapes, bias_shapes
+
 ---
+
 
 ## 📚 Posibles extensiones (para el compañero o versiones futuras)
 
